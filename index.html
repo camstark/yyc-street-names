@@ -7,20 +7,46 @@
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 70%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+/*      #controls {
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        z-index: 5;
+        background-color: #fff;
+        padding: 5px;
+        border: 1px solid #999;
+        text-align: center;
+        line-height: 30px;
+        padding-left: 10px;
+      }*/
+    </style>
   </head>
   <body>
-    <h3 id="streetname">...</h3>
-    <button id="real" type="button" data="real" class="btn btn-outline-success btn-lg">Real street</button>
-    <button id="fake" type="button" data="fake" class="btn btn-outline-danger btn-lg">Fake street</button>
-    <p id="result">So, what kind of street do you think it is?</p>
-    <p id="right"></p>
-    <p id="wrong"></p>
+    <div id="controls">
+      <h3 id="streetname">...</h3>
+      <button id="real" type="button" data="real" class="btn btn-outline-success btn-lg">Real street</button>
+      <button id="fake" type="button" data="fake" class="btn btn-outline-danger btn-lg">Fake street</button>
+      <p id="result">So, what kind of street do you think it is?</p>
+      <p id="right"></p>
+      <p id="wrong"></p>
+    </div>
+    <div id="map"></div>   
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.10.0/d3.min.js"></script>
     <script>
-
     var realnames= "https://camstark.github.io/yyc-street-names/data/streetnames/input.txt";
     var fakenames= "https://camstark.github.io/yyc-street-names/data/streetnames/modeloutput.txt";
-
     d3.text(realnames, function(realtext) {
       var data = d3.csvParseRows(realtext, function(d) {
         return d[0];
@@ -44,7 +70,6 @@
         })
         var streets = realStreets.concat(fakeStreets);
         shuffleArray(streets);
-
         var keepinScore = {right: 0, wrong: 0};
         /////////////////////////
         //Populate the guesser///
@@ -57,10 +82,8 @@
         $('#fake').click(function() {
           guesser('fake', keepinScore, streets)
         });
-
       });//end fakenames data call
     });//end realnames data call
-
     function guesser(answer, score, data) {
       var thisName = $('#streetname').data();
       if (thisName.data.type === answer) {
@@ -73,15 +96,12 @@
       };
       $('#right').html("Right " + "<span class='badge badge-pill badge-default'>" + score.right + "</span>");
       $('#wrong').html("Wrong " + "<span class='badge badge-pill badge-danger'>" + score.wrong + "</span>")
-
       var thisStreet = data.pop();
       $('#streetname').html(thisStreet.street).data("data",thisStreet);
     };
-
     function getGoogle(name) {
       return "<a target=_ href='https://www.google.ca/maps/search/" + name.replace(/ /g,"+") + "/'>" + name + "</a>";
     }
-
     /**
     * Randomize array element order in-place.
     * Using Durstenfeld shuffle algorithm.
@@ -96,10 +116,49 @@
     return array;
     }
 
+    function initMap() {
+        var map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 12,
+          center: {lat: 51.051048, lng: -114.070446},
+          mapTypeControl: false
+        });
+        var geocoder = new google.maps.Geocoder();
+
+        $('.btn').click(function() {
+          geocodeAddress(geocoder, map);
+        })
+      }
+
+      function geocodeAddress(geocoder, resultsMap) {
+        // var address = document.getElementById('address').value;
+        var address = $('#streetname').data();
+        if (address.data.type === 'real') {
+          geocoder.geocode({
+            componentRestrictions: {
+              country: 'CA',
+              locality: 'Calgary'
+            },'address': address.data.street}, function(results, status) {
+            if (status === 'OK') {
+              resultsMap.setCenter(results[0].geometry.location);
+              resultsMap.setZoom(15)
+              var marker = new google.maps.Marker({
+                map: resultsMap,
+                position: results[0].geometry.location,
+              });
+            } else {
+              alert('Geocode was not successful for the following reason: ' + status);
+            }
+          });          
+        }
+
+      }
     </script>
     <!-- jQuery first, then Tether, then Bootstrap JS. -->
     <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+    <script async defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDM5KW6_sW44Rr73cYRF_jDK2bmdp3ayUg&callback=initMap">
+    </script>
   </body>
 </html>
