@@ -141,6 +141,7 @@
       updates['/users/' + uid + '/' + guessKey] = guessData;
       updates['/streets/' + guessData.street + '/' + guessKey] = guessData;
       updates['/result/' + guessData.result + '/' + guessData.street + '/' + guessKey] = guessData;
+      updates['/dates/' + new Date().toDateString() + '/' + guessKey] = guessData;
       firebase.database().ref().update(updates);
 
       var thisStreet = data.pop();
