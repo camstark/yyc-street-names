@@ -45,7 +45,30 @@
     </div>
     <div id="map"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.10.0/d3.min.js"></script>
+    <!-- Firebase? -->
+    <script src="https://www.gstatic.com/firebasejs/4.3.0/firebase.js"></script>
     <script>
+      // Initialize Firebase
+      var config = {
+        apiKey: "AIzaSyDKuipWMwAGTJEAB6yX1jmplvyC1pMGdo8",
+        authDomain: "yyc-street-namer-1504019276259.firebaseapp.com",
+        databaseURL: "https://yyc-street-namer-1504019276259.firebaseio.com",
+        projectId: "yyc-street-namer-1504019276259",
+      };
+      firebase.initializeApp(config);
+    </script>
+    <script>
+
+    var database = firebase.database();
+    var uid;
+    firebase.auth().signInAnonymously();
+    firebase.auth().onAuthStateChanged(function(user) {
+      if (user) {
+        // User is signed in.
+        uid = user.uid;
+      }
+    });
+
     var realnames= "https://camstark.github.io/yyc-street-names/data/streetnames/input.txt";
     var fakenames= "https://camstark.github.io/yyc-street-names/data/streetnames/modeloutput.txt";
     d3.text(realnames, function(realtext) {
@@ -64,10 +87,10 @@
         })
         shuffleArray(data);
         var realStreets = data.slice(0,fakedata.length).map(function(d) {
-          return {"street": d, type: "real"};
+          return {'street': d, 'type': "real"};
         })
         var fakeStreets = fakedata.map(function(d) {
-          return {"street": d, type: "fake"};
+          return {'street': d, 'type': "fake"};
         })
         var streets = realStreets.concat(fakeStreets);
         shuffleArray(streets);
@@ -87,16 +110,39 @@
     });//end realnames data call
     function guesser(answer, score, data) {
       var thisName = $('#streetname').data();
+      var correct;
       if (thisName.data.type === answer) {
+        correct = true;
         score.right = score.right + 1;
         var streetHTML = thisName.data.type === 'real' ? getGoogle(thisName.data.street) : thisName.data.street;
         $('#result').html("Yep, <strong>" + streetHTML + "</strong> was made by a " + (thisName.data.type === 'real' ? 'human' : 'machine'))
       } else {
+        correct = false
         score.wrong = score.wrong + 1;
         $('#result').html("Nope, <strong>" + getGoogle(thisName.data.street) + "</strong> was made by a " + (thisName.data.type === 'real' ? 'human' : 'machine'))
       };
       $('#right').html("<span class='badge badge-pill badge-default'>Right " + score.right + "</span>");
       $('#wrong').html("<span class='badge badge-pill badge-danger'>Wrong " + score.wrong + "</span>")
+
+      //Write guess to database
+      var guessData = {
+        'datetimeLocale': new Date().toLocaleString(),
+        'datetimeISO': new Date().toISOString(),
+        'street': thisName.data.street,
+        'type': thisName.data.type,
+        'guess': answer,
+        'correct': correct,
+        'result': (correct === true ? 'correct' : 'wrong'),
+        'user': uid
+      };
+      var guessKey = firebase.database().ref().child('guesses').push().key;
+      var updates = {};
+      updates['/guesses/' + guessKey] = guessData;
+      updates['/users/' + uid + '/' + guessKey] = guessData;
+      updates['/streets/' + guessData.street + '/' + guessKey] = guessData;
+      updates['/result/' + guessData.result + '/' + guessData.street + '/' + guessKey] = guessData;
+      firebase.database().ref().update(updates);
+
       var thisStreet = data.pop();
       $('#streetname').html(thisStreet.street).data("data",thisStreet);
     };
@@ -117,6 +163,15 @@
     return array;
     }
 
+    function guid() {
+      function s4() {
+        return Math.floor((1 + Math.random()) * 0x10000)
+          .toString(16)
+          .substring(1);
+      }
+      return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+        s4() + '-' + s4() + s4() + s4();
+    }
     function initMap() {
         var map = new google.maps.Map(document.getElementById('map'), {
           zoom: 12,
@@ -131,7 +186,6 @@
       }
 
       function geocodeAddress(geocoder, resultsMap) {
-        // var address = document.getElementById('address').value;
         var address = $('#streetname').data();
         if (address.data.type === 'real') {
           geocoder.geocode({
@@ -155,6 +209,7 @@
 
       }
     </script>
+
     <!-- jQuery first, then Tether, then Bootstrap JS. -->
     <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
