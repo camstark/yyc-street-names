@@ -131,25 +131,25 @@
         var thisStreet = streets.pop();
         $('#streetname').html(thisStreet.street).data("data",thisStreet);
         $('#real').click(function() {
-          guesser('real', keepinScore, streets, thisStreet)
+          guesser('real', keepinScore, streets)
         });
         $('#fake').click(function() {
-          guesser('fake', keepinScore, streets, thisStreet)
+          guesser('fake', keepinScore, streets)
         });
       });//end fakenames data call
     });//end realnames data call
-    function guesser(answer, score, data, thisName) {
-      // var thisName = $('#streetname').data();
+    function guesser(answer, score, data) {
+      var thisName = $('#streetname').data();
       var correct;
-      if (thisName.type === answer) {
+      if (thisName.data.type === answer) {
         correct = true;
         score.right = score.right + 1;
-        var streetHTML = thisName.type === 'real' ? getGoogle(thisName.street) : thisName.street;
-        $('#result').html("Yep, <strong>" + streetHTML + "</strong> was made by a " + (thisName.type === 'real' ? 'human' : 'machine'))
+        var streetHTML = thisName.data.type === 'real' ? getGoogle(thisName.data.street) : thisName.data.street;
+        $('#result').html("Yep, <strong>" + streetHTML + "</strong> was made by a " + (thisName.data.type === 'real' ? 'human' : 'machine'))
       } else {
         correct = false
         score.wrong = score.wrong + 1;
-        $('#result').html("Nope, <strong>" + getGoogle(thisName.street) + "</strong> was made by a " + (thisName.type === 'real' ? 'human' : 'machine'))
+        $('#result').html("Nope, <strong>" + getGoogle(thisName.data.street) + "</strong> was made by a " + (thisName.data.type === 'real' ? 'human' : 'machine'))
       };
       $('#right').html("<span class='badge badge-pill badge-default'>Right " + score.right + "</span>");
       $('#wrong').html("<span class='badge badge-pill badge-danger'>Wrong " + score.wrong + "</span>")
@@ -158,8 +158,8 @@
       var guessData = {
         'datetimeLocale': new Date().toLocaleString(),
         'datetimeISO': new Date().toISOString(),
-        'street': thisName.street,
-        'type': thisName.type,
+        'street': thisName.data.street,
+        'type': thisName.data.type,
         'guess': answer,
         'correct': correct,
         'result': (correct === true ? 'correct' : 'wrong'),
