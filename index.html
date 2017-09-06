@@ -214,12 +214,12 @@
         var geocoder = new google.maps.Geocoder();
 
         $('.btn').click(function() {
-          geocodeAddress(geocoder, map);
+          var address = $('#streetname').data();
+          geocodeAddress(geocoder, map, address);
         })
       }
 
-      function geocodeAddress(geocoder, resultsMap) {
-        var address = $('#streetname').data();
+      function geocodeAddress(geocoder, resultsMap, address) {
         if (address.data.type === 'real') {
           geocoder.geocode({
             componentRestrictions: {
