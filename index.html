@@ -34,6 +34,30 @@
     </style>
   </head>
   <body>
+    <!-- The Modal -->
+    <div id="explainer" class="modal fade">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Calgary Street Namer</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>Can an algorithm learn to generate reasonable-sounding street names?</p>
+            <!-- I trained <a href="https://github.com/sherjilozair/char-rnn-tensorflow" target=_blank>a recurrent neural network</a> to generate new Calgary street names.</p> -->
+            <p>Using 7,765 <a href="https://data.calgary.ca/Base-Maps/Parcel-Address/9zvu-p8uz/data" target=_blank>real Calgary street names</a>, I trained <a href="https://github.com/sherjilozair/char-rnn-tensorflow" target=_blank>a recurrent neural network</a> to make up brand new fake streets.</p>
+            <p>Sometimes it gets a little carried away (see "Sage Blumf Glen View NW"), but often it's hard to tell real from fake.</p>
+            <p>Can you tell whether these street names were made by a human or a machine?</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-dismiss="modal">Just let me guess already!</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Modal -->
     <div id="controls">
       <h3 id="streetname">...</h3>
       <button id="real" type="button" data="real" class="btn btn-outline-success btn-lg">Real street</button>
@@ -45,6 +69,10 @@
     </div>
     <div id="map"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.10.0/d3.min.js"></script>
+    <!-- jQuery first, then Tether, then Bootstrap JS. -->
+    <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
     <!-- Firebase? -->
     <script src="https://www.gstatic.com/firebasejs/4.3.0/firebase.js"></script>
     <script>
@@ -68,6 +96,8 @@
         uid = user.uid;
       }
     });
+
+    $('#explainer').modal();
 
     var realnames= "https://camstark.github.io/yyc-street-names/data/streetnames/input.txt";
     var fakenames= "https://camstark.github.io/yyc-street-names/data/streetnames/modeloutput.txt";
@@ -211,10 +241,6 @@
       }
     </script>
 
-    <!-- jQuery first, then Tether, then Bootstrap JS. -->
-    <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
     <script async defer
       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDM5KW6_sW44Rr73cYRF_jDK2bmdp3ayUg&callback=initMap">
     </script>
